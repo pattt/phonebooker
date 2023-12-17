@@ -1,0 +1,149 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Phone booker service
+  license:
+    name: MIT
+servers:
+  - url: http://localhost/v1
+paths:
+  /phones:
+    get:
+      summary: List all phones
+      operationId: listPhones
+      tags:
+        - phones
+      parameters:
+        - name: limit
+          in: query
+          description: How many items to return at one time (max 100)
+          required: false
+          schema:
+            type: integer
+            maximum: 100
+            format: int32
+      responses:
+        '200':
+          description: A paged array of phones
+          headers:
+            x-next:
+              description: A link to the next page of phones
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Phones"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /phones/{phoneName}:
+    get:
+      summary: Info for a specific phone
+      operationId: showPhoneById
+      tags:
+        - phones
+      parameters:
+        - name: phoneName
+          in: path
+          required: true
+          description: The name of the phone to retrieve
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Phone"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /bookphone:
+    post:
+      summary: Book a phone
+      operationId: bookPhone
+      tags:
+        - book
+      requestBody:
+        description: phone data to book
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookPhone'
+      responses:
+        '201':
+          description: Null response
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      summary: Book a phone
+      operationId: unbookPhone
+      tags:
+        - book
+      requestBody:
+        description: phone data to unbook
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookPhone'
+      responses:
+        '204':
+          description: Null response
+components:
+  schemas:
+    Phone:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        testername:
+          type: string
+        bookedAt:
+          type: string
+          format: date-time
+          description: Date and time og booking
+          example: "2023-01-30T08:30:00Z"
+    Phones:
+      type: array
+      maxItems: 100
+      items:
+        $ref: "#/components/schemas/Phone"
+    BookPhone:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        testername:
+          type: string
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
